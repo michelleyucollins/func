@@ -358,7 +358,7 @@ func migrateToEnvs (f Function, m migration) (Function, error) {
 		return f, errors.New("migration 'migrateToEnvs' error: " + err.Error())
 	}
 
-	f.envs = m.buildEnvs
+	f.Build.BuildEnvs = m.Build.BuildEnvs
 	return f, nil
 }
 
