@@ -38,7 +38,7 @@ build:
     # contextDir: myfunction                          # optional, needed only if the function is not located in the repository root folder
   buildpacks: []
   builder: ""
-  buildEnvs: []
+  envs: []
 ```
 5. Implement the business logic of your Function, then commit and push changes
 ```bash

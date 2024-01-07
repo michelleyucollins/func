@@ -84,6 +84,7 @@ var migrations = []migration{
 	{"0.34.0", migrateToSpecsStructure},
 	{"0.35.0", migrateFromInvokeStructure},
 	{"0.36.0", migratePersistentVolumeTypoFixup},
+	{"0.37.0", migrateToEnvs},
 	// New Migrations Here.
 }
 
@@ -341,6 +342,26 @@ func migratePersistentVolumeTypoFixup(fn Function, m migration) (Function, error
 	return fn, nil
 }
 
+// migrateToEnvs updates a func.yaml file to use envs
+// instead of buildEnvs to track the
+func migrateToEnvs (f Function, m migration) (Function, error) {
+	// Load the function func.yaml file
+	f0Filename := filepath.Join(f.Root, FunctionFile)
+	bb, err := os.ReadFile(f0Filename)
+	if err != nil {
+		return f, errors.New("migration 'migrateToEnvs' error: " + err.Error())
+	}
+
+	// Only handle the Version field if it exists
+	f0 := migrateToEnvs_previousFunction{}
+	if err = yaml.Unmarshal(bb, &f0); err != nil {
+		return f, errors.New("migration 'migrateToEnvs' error: " + err.Error())
+	}
+
+	f.envs = m.buildEnvs
+	return f, nil
+}
+
 // The pertinent aspects of the Function's schema prior the 1.0.0 version migrations
 type migrateToSpecs_previousFunction struct {
 
@@ -370,7 +391,7 @@ type migrateToSpecs_previousFunction struct {
 	Volumes []Volume `yaml:"volumes"`
 
 	// Build Env variables to be set
-	BuildEnvs []Env `yaml:"buildEnvs"`
+	BuildEnvs []Env `yaml:"buildEnvs"` 
 
 	// Env variables to be set
 	Envs []Env `yaml:"envs"`
@@ -409,4 +430,9 @@ type migrateFromInvokeStructure_invocation struct {
 // Functions prior to 0.35.0 will have Invocation.Format instead of Invoke
 type migrateFromInvokeStructure_previousFunction struct {
 	Invocation migrateFromInvokeStructure_invocation `yaml:"invocation,omitempty"`
+}
+
+// Functions prior to 0.37.0 will have buildEnvs instead of envs
+type migrateToEnvs_previousFunction struct {
+	BuildEnvs []Env `yaml:"buildEnvs"` 
 }
